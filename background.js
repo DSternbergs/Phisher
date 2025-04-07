@@ -76,4 +76,14 @@ const blacklist = [
 "http://000ogxd.wcomhost.com/tops/customer_center/customer-IDPP00C266/myaccount/signin",
 "http://000ogxd.wcomhost.com/trustme/customer_center/customer-IDPP00C849",
 "http://000oiq3.wcomhost.com/drunk/customer_center/customer-IDPP00C374/myaccount/signin"
-]
+];
+
+// Simple heuristic function
+function isSuspicious(url) {
+    return (
+        url.includes("@") ||        // @ symbol is common in phishing URLs
+        url.includes("-") ||        // Hyphenated URLs are not common and may be a sign of a phishing URL
+        url.split(".").length > 3 ||        
+        url.match(/[0-9]{6,}/)
+    );
+}
