@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Anti-Phishing Extension",
+    "name": "Phisher",
     "version": "1.0",
     "description": "Detect phishing websites using heuristics and blacklists.",
     "permissions": ["webRequest", "webRequestBlocking", "activeTab", "storage"],
