@@ -32,36 +32,3 @@ async function loadBlacklistAndBlock() {
 chrome.runtime.onInstalled.addListener(() => {
   loadBlacklistAndBlock();
 });
-
-function isUnusual(url) {
-    return (
-      url.includes("-") ||
-      url.includes("@") ||
-      url.split(".").length > 3 ||
-      url.match(/[0-9]{6,}/)
-    );
-  }
-  
-  chrome.webNavigation.onCompleted.addListener(async (details) => {
-    const url = details.url;
-  
-    // Ignore Chrome internal URLs and new tab pages
-    if (
-      url.startsWith("chrome://") ||
-      url.startsWith("chrome-extension://") ||
-      url === "about:blank" ||
-      url === "about:newtab"
-    ) {
-      return;
-    }
-  
-    // Run heuristics
-    if (isUnusual(url)) {
-      chrome.tabs.update(details.tabId, {
-        url: chrome.runtime.getURL("warning.html") + `?original=${encodeURIComponent(url)}`
-      });
-    }
-  }, {
-    url: [{ urlMatches: 'http://*/*' }, { urlMatches: 'https://*/*' }]
-  });
-  
