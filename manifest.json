@@ -6,7 +6,8 @@
     "webNavigation",
     "tabs",
     "scripting",
-    "activeTab"
+    "activeTab",
+    "declarativeNetRequest"
   ],
   "host_permissions": [
     "<all_urls>"
