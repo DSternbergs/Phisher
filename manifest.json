@@ -1,25 +1,22 @@
 {
-    "manifest_version": 3,
-    "name": "Phisher",
-    "version": "1.0",
-    "description": "Detect phishing websites using heuristics and blacklists.",
-    "permissions": ["webRequest", "declarativeNetRequest", "activeTab", "storage", "scripting"],
-    "host_permissions": ["<all_urls>"],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "16": "16.jpg",
-        "48": "48.png",
-        "128": "128.png"
-      }
-    },
-    "web_accessible_resources": [
-      {
-        "resources": ["warning.html"],
-        "matches": ["<all_urls>"]
-      }
-    ]
-  }
+  "manifest_version": 3,
+  "name": "Phisher",
+  "version": "1.0",
+  "permissions": [
+    "webNavigation",
+    "tabs",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [{
+    "resources": ["warning.html"],
+    "matches": ["<all_urls>"]
+  }]
+}
+
