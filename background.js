@@ -1,34 +1,61 @@
-// Phishing blacklist. OpenAI (2025) ChatGPT. [Online]. Available from: <https://chatgpt.com/c/67db279b-5194-800e-aa63-6017c70dde37> [Accessed 07/04/2025].
 let blacklist = [];
 
-fetch(chrome.runtime.getURL('blacklist.txt'))       // Fetches data from blacklist.txt
-    .then(response => response.text())      // Turns contents of blacklist.txt into plain text
-    .then(text => {
-        blacklist = text.split('\n').map(domain => domain.trim()); // Splits the text into arrays and splits at every new line and removes any empty spaces.
-    })
-   
+async function loadBlacklistAndBlock() {
+  const response = await fetch(chrome.runtime.getURL('blacklist.txt'));
+  const text = await response.text();
+  blacklist = text
+    .split('\n')
+    .map(domain => domain.trim())
+    .filter(domain => domain.length > 0);
 
-// Simple heuristic functions
-function isUnusual(url) {
-    return (
-        url.includes("-") ||        // - symbol is uncommon in legitimate URLs
-        url.includes("@") ||        // @ symbol is common and may be a sign of a phishing URL
-        url.split(".").length > 3 ||        // Urls split with more than 3 .'s are usually suspicious links
-        url.match(/[0-9]{6,}/)      // Looks out for websites with just numbers as the name.
-    );
+  const rules = blacklist.map((domain, index) => ({
+    id: index + 1, // Rule IDs must be positive integers
+    priority: 1,
+    action: {
+      type: "redirect",
+      redirect: { url: chrome.runtime.getURL("warning.html") }
+    },
+    condition: {
+      urlFilter: `||${domain}`, // Matches the domain
+      resourceTypes: ["main_frame"]
+    }
+  }));
+
+  // Remove any existing rules, then add ours
+  chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: rules.map(rule => rule.id),
+    addRules: rules
+  });
 }
 
-// Monitor web requests. OpenAI (2025) ChatGPT. [Online]. Available from: <https://chatgpt.com/c/67db279b-5194-800e-aa63-6017c70dde37> [Accessed 07/04/2025].
-chrome.webRequest.onBeforeRequest.addListener(      // Function is ran everytime before a web page is loaded to check if its safe
-    function (details) {        // Function gets details about the web request
-        const url = new URL(details.url);       // Breaks up the URL
-        const domain = url.hostname;        // Breaks up the URL
+// Load rules when extension is installed/updated
+chrome.runtime.onInstalled.addListener(() => {
+  loadBlacklistAndBlock();
+});
 
-        if (blacklist.includes(domain) || isUnusual(url.href)) {         // If blacklist.txt includes the domain or if the heuristic functions deem this suspicious
-            // Block page and show warning
-            return {redirectUrl: chrome.runtime.getURL("warning.html")};        // Redirects user to a warning page if domain is suspicious
-        }
-    },
-    { urls: ["<all_urls>"] },       // Ensures this code is ran for every website
-    ["blocking"]        // Pause request until it is blocked or allowed
-)
+function isUnusual(url) {
+    return (
+      url.includes("-") ||
+      url.includes("@") ||
+      url.split(".").length > 3 ||
+      url.match(/[0-9]{6,}/)
+    );
+  }
+  
+  chrome.webNavigation.onCompleted.addListener(async (details) => {
+    const tabId = details.tabId;
+    const url = details.url;
+  
+    // Ignore internal extension URLs
+    if (url.startsWith('chrome-extension://')) return;
+  
+    // Run your heuristic
+    if (isUnusual(url)) {
+      chrome.tabs.update(tabId, {
+        url: chrome.runtime.getURL('warning.html')
+      });
+    }
+  }, {
+    url: [{ urlMatches: 'http://*/*' }, { urlMatches: 'https://*/*' }]
+  });
+  
