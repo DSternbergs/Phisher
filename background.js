@@ -43,16 +43,22 @@ function isUnusual(url) {
   }
   
   chrome.webNavigation.onCompleted.addListener(async (details) => {
-    const tabId = details.tabId;
     const url = details.url;
   
-    // Ignore internal extension URLs
-    if (url.startsWith('chrome-extension://')) return;
+    // Ignore Chrome internal URLs and new tab pages
+    if (
+      url.startsWith("chrome://") ||
+      url.startsWith("chrome-extension://") ||
+      url === "about:blank" ||
+      url === "about:newtab"
+    ) {
+      return;
+    }
   
-    // Run your heuristic
+    // Run heuristics
     if (isUnusual(url)) {
-      chrome.tabs.update(tabId, {
-        url: chrome.runtime.getURL('warning.html')
+      chrome.tabs.update(details.tabId, {
+        url: chrome.runtime.getURL("warning.html") + `?original=${encodeURIComponent(url)}`
       });
     }
   }, {
