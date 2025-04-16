@@ -50,13 +50,19 @@ function isSafeDomain(url) {
 }
 
 function isUnusual(url) {
+  try {
+    const { hostname } = new URL(url);
+
     return (
-      url.includes("-") ||
-      url.includes("@") ||
-      url.split(".").length > 3 ||
-      url.match(/[0-9]{6,}/)
+      hostname.includes("-") ||
+      hostname.includes("@") ||
+      hostname.split(".").length > 3 ||
+      hostname.match(/[0-9]{6,}/)
     );
+  } catch (e) {
+    return false;
   }
+}
   
   chrome.webNavigation.onCompleted.addListener(async (details) => {
     const url = details.url;
