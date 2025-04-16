@@ -32,3 +32,70 @@ async function loadBlacklistAndBlock() {
 chrome.runtime.onInstalled.addListener(() => {
   loadBlacklistAndBlock();
 });
+
+const safeDomains = [
+  "www.google.com",
+  "google.com",
+  "bing.com",
+  "yahoo.com" 
+];
+
+function isSafeDomain(url) {
+  try {
+    const domain = new URL(url).hostname;
+    return SafeDomains.includes(domain);
+  } catch (e) {
+    return false;
+  }
+}
+
+function isUnusual(url) {
+    return (
+      url.includes("-") ||
+      url.includes("@") ||
+      url.split(".").length > 3 ||
+      url.match(/[0-9]{6,}/)
+    );
+  }
+  
+  chrome.webNavigation.onCompleted.addListener(async (details) => {
+    const url = details.url;
+  
+    // Only run for top-level frames (not iframes or widgets)
+    if (details.frameId !== 0) return;
+  
+    console.log("Top-level URL:", url);
+  
+    // Bail on internal or extension URLs
+    if (
+      url.startsWith("chrome-untrusted://") ||
+      url.startsWith("chrome://") ||
+      url.startsWith("chrome-extension://") ||
+      url.startsWith("chrome-search://") ||
+      url.startsWith("about:") ||
+      url === "about:blank"
+    ) {
+      return;
+    }
+  
+    // Only handle real http/https pages
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      return;
+    }
+
+    if (isSafeDomain(url)) {
+      console.log("Safe domain, skipping...", url);
+      return;
+    }
+  
+    // Run heuristic check
+    if (isUnusual(url)) {
+      console.log("Suspicious URL detected! Redirecting:", url);
+      chrome.tabs.update(details.tabId, {
+        url: chrome.runtime.getURL("warning.html") + `?original=${encodeURIComponent(url)}`
+      });
+    }
+  }, {
+    url: [{ urlMatches: "http://*/*" }, { urlMatches: "https://*/*" }]
+  });
+  
