@@ -18,6 +18,11 @@
   "web_accessible_resources": [{
     "resources": ["warning.html"],
     "matches": ["<all_urls>"]
-  }]
+  }],
+  "icons": {
+    "16": "16.jpg",
+    "48": "48.png",
+    "128": "128.png"
+  }
 }
 
