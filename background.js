@@ -64,21 +64,20 @@ function isUnusual(url) {
   }
 }
   
-  chrome.webNavigation.onCompleted.addListener(async (details) => {
-    chrome.storage.local.get('enabled', async (data) => {
-      if (!data.enabled) {
-        console.log("Extension disabled.");
-        return;
-      }
-    })
-    
+chrome.webNavigation.onCompleted.addListener(async (details) => {
+  chrome.storage.local.get('enabled', async (data) => {
+    if (!data.enabled) {
+      console.log("Extension is disabled — skipping URL check.");
+      return;  // Exit if the extension is disabled
+    }
+
     const url = details.url;
-  
+
     // Only run for top-level frames (not iframes or widgets)
     if (details.frameId !== 0) return;
-  
+
     console.log("Top-level URL:", url);
-  
+
     // Bail on internal or extension URLs
     if (
       url.startsWith("chrome-untrusted://") ||
@@ -90,7 +89,7 @@ function isUnusual(url) {
     ) {
       return;
     }
-  
+
     // Only handle real http/https pages
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       return;
@@ -100,15 +99,17 @@ function isUnusual(url) {
       console.log("Safe domain, skipping...", url);
       return;
     }
-  
-    // Run heuristic check
+
+    // Run heuristic check if extension is enabled
     if (isUnusual(url)) {
       console.log("Suspicious URL detected! Redirecting:", url);
       chrome.tabs.update(details.tabId, {
         url: chrome.runtime.getURL("warning.html") + `?original=${encodeURIComponent(url)}`
       });
     }
-  }, {
-    url: [{ urlMatches: "http://*/*" }, { urlMatches: "https://*/*" }]
   });
+}, {
+  url: [{ urlMatches: "http://*/*" }, { urlMatches: "https://*/*" }]
+});
+
   
