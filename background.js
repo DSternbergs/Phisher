@@ -65,6 +65,13 @@ function isUnusual(url) {
 }
   
   chrome.webNavigation.onCompleted.addListener(async (details) => {
+    chrome.storage.local.get('enabled', async (data) => {
+      if (!data.enabled) {
+        console.log("Extension disabled.");
+        return;
+      }
+    })
+    
     const url = details.url;
   
     // Only run for top-level frames (not iframes or widgets)
