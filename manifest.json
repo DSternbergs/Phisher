@@ -19,6 +19,15 @@
     "resources": ["warning.html"],
     "matches": ["<all_urls>"]
   }],
+  "action": {
+    "default_icon": {
+      "16": "16.jpg",
+      "48": "48.png",
+      "128": "128.png"
+    },
+    "default_title": "Phisher"
+  },
+
   "icons": {
     "16": "16.jpg",
     "48": "48.png",
